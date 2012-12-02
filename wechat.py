@@ -50,7 +50,7 @@ class Conversation:
         'QQ_OFFLINE': 36,
         'FRIEND_RECOMMENDATION': 40,
         'EMOJI': 47,
-        'VIDEO': 10000
+        'SYSTEM': 10000
     }
 
     MSG_DEST = {
