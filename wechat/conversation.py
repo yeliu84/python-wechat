@@ -31,21 +31,21 @@ class Conversation:
     }
 
     def __init__(self, db):
-        self.__db = db
-        self.__tbl_master = self.__db.reflect(TBL_MASTER)
-        self.__chat_tbls = {}
+        self._db = db
+        self._tbl_master = self._db.reflect(TBL_MASTER)
+        self._chat_tbls = {}
 
     def get_conversations(self):
-        master = self.__tbl_master
+        master = self._tbl_master
         stmt = select([master.c.name], and_(master.c.type == 'table',
             master.c.name.like(TBL_CHAT_PATTERN)))
-        for row in self.__db.conn.execute(stmt):
+        for row in self._db.conn.execute(stmt):
             cid = row[0]
-            tbl = self.__get_chat_tbl(cid)
+            tbl = self._get_chat_tbl(cid)
             stmt = select([select([func.count(tbl.c.MesLocalID)]).as_scalar(),
                 tbl.c.Message, tbl.c.CreateTime, tbl.c.Type, tbl.c.Des]).\
                     order_by(tbl.c.CreateTime.desc()).limit(1)
-            result = self.__db.conn.execute(stmt).fetchone()
+            result = self._db.conn.execute(stmt).fetchone()
             yield {'cid': cid,
                    'msg_count': result[0],
                    'last_msg_content': result[1],
@@ -54,17 +54,17 @@ class Conversation:
                    'last_msg_dest': result[4]}
 
     def get_messages(self, cid):
-        tbl = self.__get_chat_tbl(cid)
+        tbl = self._get_chat_tbl(cid)
         stmt = select([tbl.c.MesLocalID, tbl.c.CreateTime, tbl.c.Message,
             tbl.c.Type, tbl.c.Des])
-        for row in self.__db.conn.execute(stmt):
+        for row in self._db.conn.execute(stmt):
             yield {'id': row[0],
                    'ctime': row[1],
                    'content': row[2],
                    'type': row[3],
                    'dest': row[4]}
 
-    def __get_chat_tbl(self, cid):
-        if cid not in self.__chat_tbls:
-            self.__chat_tbls[cid] = self.__db.reflect(cid)
-        return self.__chat_tbls[cid]
+    def _get_chat_tbl(self, cid):
+        if cid not in self._chat_tbls:
+            self._chat_tbls[cid] = self._db.reflect(cid)
+        return self._chat_tbls[cid]

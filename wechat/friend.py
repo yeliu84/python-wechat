@@ -31,19 +31,19 @@ class Friend:
     }
 
     def __init__(self, db):
-        self.__db = db
-        self.__tbl_friend = db.reflect(TBL_FRIEND)
-        self.__tbl_friend_ext = db.reflect(TBL_FRIEND_EXT)
+        self._db = db
+        self._tbl_friend = db.reflect(TBL_FRIEND)
+        self._tbl_friend_ext = db.reflect(TBL_FRIEND_EXT)
 
     def get_friends(self):
-        friend = self.__tbl_friend
+        friend = self._tbl_friend
         stmt = select([friend.c.UsrName, friend.c.NickName, friend.c.Sex,
             friend.c.ShortPY, friend.c.Img, friend.c.Type,
             friend.c.LastChatTime],
                 and_(friend.c.Type > 0,
                     not_(friend.c.UsrName.like('%@t.qq.com')),
                     not_(friend.c.UsrName.like('%@chatroom'))))
-        for row in self.__db.conn.execute(stmt):
+        for row in self._db.conn.execute(stmt):
             ret = {'username': row[0],
                    'nickname': row[1],
                    'gender': row[2],
@@ -57,9 +57,9 @@ class Friend:
             yield ret
 
     def get_avatar(self, username):
-        extra = self.__tbl_friend_ext
+        extra = self._tbl_friend_ext
         stmt = select([extra.c.ConStrRes2], extra.c.UsrName == username)
-        row = self.__db.conn.execute(stmt).fetchone()
+        row = self._db.conn.execute(stmt).fetchone()
         m = RE_AVATAR_URL.search(row[0])
         if m:
             return (m.group('avatar'), m.group('avatar_hd'))
