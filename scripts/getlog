@@ -1,0 +1,65 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+
+from datetime import datetime
+
+from wechat import db
+from wechat.conversation import Conversation as Conv
+from wechat.friend import Friend
+
+def progress(total, label='Progress'):
+    print('{}:'.format(label), end=' ')
+    count = 1
+    while count <= total:
+        out = '{:.0%}'.format(count / total)
+        print(out, end='', flush=True)
+        yield count
+        print('\b' * len(out), end='')
+        count += 1
+
+def format_timestamp(ts):
+    return datetime.fromtimestamp(ts).strftime('%Y-%m-%d %H:%M')
+
+wxdb = db.DB('data/MM.sqlite')
+conv = Conv(wxdb)
+frnd = Friend(wxdb)
+
+user = input('What is your name? [Unknown User] ')
+if not user:
+    user = 'Unknown User'
+
+for c in conv.get_conversations():
+    short_last_msg = ' '.join(c['last_msg_content'].splitlines())[:50]
+    msg_type = 'Unknown Type'
+    for msg_type in Conv.MSG_TYPES:
+        if c['last_msg_type'] == Conv.MSG_TYPES[msg_type]:
+            break
+    print('\nConversation ID: {}:'.format(c['cid']))
+    print('  Total: {}'.format(c['msg_count']))
+    print('  Last message: {}'.format(short_last_msg))
+    print('  Last message type: {}'.format(msg_type))
+    print('  Last message time: {}'.format(
+        format_timestamp(c['last_msg_ctime'])))
+
+    ans = input('\nDo you want to write this conversation to file? [y/N/q] ').\
+        lower()
+    if ans.startswith('y'):
+        friend = input("What is your friend's name in this conversation?  [Unknown Friend] ")
+        if not friend:
+            friend = 'Unknown Friend'
+        fname = '{}.log'.format(c['cid'])
+        print_progress = progress(c['msg_count'],
+            'Writing to file {}'.format(fname))
+        with open(fname, 'w') as ofile:
+            for msg in conv.get_messages(c['cid']):
+                next(print_progress)
+                if msg['type'] == Conv.MSG_TYPES['TEXT']:
+                    if msg['dest'] == Conv.MSG_DEST['OUT']:
+                        name = user
+                    else:
+                        name = friend
+                    print('[{}] {}: {}'.format(format_timestamp(msg['ctime']),
+                        name, msg['content']), file=ofile)
+            print()
+    elif ans.startswith('q'):
+        break
