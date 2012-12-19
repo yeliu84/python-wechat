@@ -1,8 +1,9 @@
 .DS_Store
-*.pyc
 tags
+*.pyc
+__pycache__/
 MANIFEST
-data/*
-tests*
 dist/
 *egg-info/
+data/*
+tests*
