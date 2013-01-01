@@ -12,6 +12,6 @@ __ver__ = (0, 0, 2)
 __author__ = 'Ye Liu'
 __contact__ = 'yeliu@instast.com'
 __license__ = 'BSD'
-__copyright__ = 'Copyright (c) 2012 Ye Liu'
+__copyright__ = 'Copyright (c) 2013 Ye Liu'
 
 __all__ = ['db', 'conversation', 'friend']
